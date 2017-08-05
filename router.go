@@ -1,7 +1,6 @@
 package track
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -25,45 +24,37 @@ func hello(w http.ResponseWriter, r *http.Request, params map[string]string) {
 
 //New instantiate a new Router
 func New() *Router {
-	fmt.Println("log")
 	return &Router{}
 }
 
 //Post handles HTTP POST request through ServeHTTP
 func (r *Router) Post(path string, h Handle) {
-	rt := route{}
-	rt.Path = path
-	rt.Method = "POST"
-	rt.Handler = h
-
-	r.routes = append(r.routes, rt)
+	r.handle(path, "POST", h)
 }
 
 //Get handles HTTP POST request through ServeHTTP
 func (r *Router) Get(path string, h Handle) {
-	rt := route{}
-	rt.Path = path
-	rt.Method = "GET"
-	rt.Handler = h
-
-	r.routes = append(r.routes, rt)
+	r.handle(path, "GET", h)
 }
 
 //Patch handles HTTP POST request through ServeHTTP
 func (r *Router) Patch(path string, h Handle) {
-	rt := route{}
-	rt.Path = path
-	rt.Method = "PATCH"
-	rt.Handler = h
-
-	r.routes = append(r.routes, rt)
+	r.handle(path, "PATCH", h)
 }
 
 //Delete handles HTTP POST request through ServeHTTP
 func (r *Router) Delete(path string, h Handle) {
+	r.handle(path, "DELETE", h)
+}
+
+func (r *Router) handle(path string, method string, h Handle) {
+	if path[0] != '/' {
+		panic("route path must start with /")
+	}
+
 	rt := route{}
 	rt.Path = path
-	rt.Method = "DELETE"
+	rt.Method = method
 	rt.Handler = h
 
 	r.routes = append(r.routes, rt)
