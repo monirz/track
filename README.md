@@ -11,7 +11,7 @@ Track is a simple HTTP router for Go. Yet another router for Go? I created this 
 ```go
 func main() {
 
-	r := &track.Router{}
+	r := track.New()
 
 	r.Get("/users", users)
 	r.Get("/users/profile", users)
