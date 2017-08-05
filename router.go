@@ -18,10 +18,6 @@ type route struct {
 	Handler Handle
 }
 
-func hello(w http.ResponseWriter, r *http.Request, params map[string]string) {
-	w.Write([]byte("hello"))
-}
-
 //New instantiate a new Router
 func New() *Router {
 	return &Router{}
