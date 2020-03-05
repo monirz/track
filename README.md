@@ -1,4 +1,6 @@
-# track
+# track 
+[![Coverage](https://gocover.io/_badge/github.com/monirz/track)](https://gocover.io/github.com/monirz/track) [![Actions Status](https://github.com/monirz/track/workflows/build/badge.svg)](https://github.com/monirz/gotri/actions) 
+
 Track is a fast and lightweight HTTP router for Go built using Trie/Prefix data structure, which doesn't break the standard net/http handler.  
 
 
