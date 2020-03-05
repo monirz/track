@@ -2,103 +2,83 @@ package track
 
 import (
 	"net/http"
-	"strings"
 )
 
-//Handle matches http.Handler signature with a extra parameter
-type Handle func(http.ResponseWriter, *http.Request, map[string]string)
-
-//Router holds the defined routes
 type Router struct {
-	routes []route
-}
-type route struct {
-	Path    string
-	Method  string
-	Handler Handle
+	Children    map[string]*Router
+	Value       http.Handler
+	isEnd       bool
+	isParam     bool
+	Pram        map[string]string
+	Method      []string
+	middlewares []func(http.HandlerFunc) http.HandlerFunc
 }
 
-//New instantiate a new Router
+//New creates new instance
 func New() *Router {
-	return &Router{}
-}
 
-//Post handles HTTP POST request through ServeHTTP
-func (r *Router) Post(path string, h Handle) {
-	r.handle(path, "POST", h)
-}
-
-//Get handles HTTP POST request through ServeHTTP
-func (r *Router) Get(path string, h Handle) {
-	r.handle(path, "GET", h)
-}
-
-//Patch handles HTTP POST request through ServeHTTP
-func (r *Router) Patch(path string, h Handle) {
-	r.handle(path, "PATCH", h)
-}
-
-//Delete handles HTTP POST request through ServeHTTP
-func (r *Router) Delete(path string, h Handle) {
-	r.handle(path, "DELETE", h)
-}
-
-func (r *Router) handle(path string, method string, h Handle) {
-	if path[0] != '/' {
-		panic("route path must start with /")
-	}
-
-	rt := route{}
-	rt.Path = path
-	rt.Method = method
-	rt.Handler = h
-
-	r.routes = append(r.routes, rt)
-}
-
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	reqPath := req.URL.Path
-	if strings.HasSuffix(reqPath, "/") {
-		reqPath = strings.TrimSuffix(reqPath, "/")
-	}
-	reqParts := strings.Split(reqPath, "/")[1:]
-
+	m := make(map[string]*Router)
 	params := make(map[string]string)
-	for i, route := range r.routes {
+	return &Router{Children: m, Pram: params}
+}
 
-		routeParts := strings.Split(route.Path, "/")[1:]
+func (r *Router) add(vals []string, method string, h http.Handler) {
 
-		if len(routeParts) != len(reqParts) || route.Method != req.Method {
-			if len(r.routes)-1 == i {
-				http.NotFound(w, req)
-				return
-			}
-			continue
-		}
-
-		isParam := false
-		var paramTrimmed string
-
-		for k, v := range routeParts {
-
-			if strings.HasPrefix(v, ":") {
-				isParam = true
-				paramTrimmed = strings.TrimPrefix(v, ":")
-				params[paramTrimmed] = reqParts[k]
-
-			}
-
-			if !isParam {
-				if v != reqParts[k] {
-					http.NotFound(w, req)
-					return
-				}
-			}
-
-		}
-
-		route.Handler(w, req, params)
+	if len(vals) < 1 {
+		r.isEnd = true
+		r.Value = h
+		r.Method = append(r.Method, method)
 		return
-
 	}
+
+	if _, ok := r.Children[vals[0]]; !ok {
+		r.Children[vals[0]] = New()
+
+		if vals[0][0] == ':' {
+			r.Children[vals[0]].isParam = true
+		}
+	}
+
+	r.Children[vals[0]].add(vals[1:], method, h)
+
+}
+
+func (r *Router) search(vals []string) *Router {
+
+	if r == nil {
+		return nil
+	}
+
+	curr := r
+
+	for _, v := range vals {
+
+		if _, ok := curr.Children[v]; !ok {
+
+			if len(curr.Children) > 0 {
+
+				for k := range curr.Children {
+
+					if curr.Children[k].isParam {
+						curr.Pram[k] = v
+						v = k
+						break
+					}
+				}
+
+			} else {
+				return nil
+
+			}
+
+		}
+
+		curr = curr.Children[v]
+
+		if curr == nil {
+			return nil
+		}
+	}
+
+	return curr
 }

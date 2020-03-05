@@ -1,32 +1,61 @@
-# track
-Track is a simple HTTP router for Go. Yet another router for Go? I created this for learning and experiment.  
+# track 
+[![Coverage](https://gocover.io/_badge/github.com/monirz/track)](https://gocover.io/github.com/monirz/track) [![Actions Status](https://github.com/monirz/track/workflows/build/badge.svg)](https://github.com/monirz/gotri/actions) 
+
+Track is a fast and lightweight HTTP router for Go built using Trie/Prefix data structure, which doesn't break the standard net/http handler.  
 
 
 ### Install
 
-`go get github.com/monirz/track`
+`go get -u github.com/monirz/track`
 
 ### Usage
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/monirz/track"
+)
+
+func main() {
+
+	router := track.New()
+
+	router.Get("/users", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello users!")
+	})
+
+	http.ListenAndServe(":8090", router)
+}
+
+```
+
+### Using middleware
 
 ```go
 func main() {
 
 	r := track.New()
 
-	r.Get("/users", users)
-	r.Get("/users/profile", users)
-	r.Post("/users/:id", users)
-	r.Patch("/users/:id", users)
-	r.Delete("/users/:id", users)
+	r.Use(track.CORSMethodMiddleware(r))
+	r.Get("/users", userHandler)
+	r.Options("/users", userHandler)
 
-	http.ListenAndServe(":8080", r)
-}
+	http.ListenAndServe(":8090", r)
 
-//create your http handler 
-func users(w http.ResponseWriter, r *http.Request, params map[string]string) {
-	//get the route parameter
-	id := params["id"]
-	fmt.Println(id)
-	w.Write([]byte("users"))
 }
+```
+
+### Test 
+
+```
+$ go test -v . 
+```
+### Benchmark 
+
+```
+$ go test -bench=. 
 ```
