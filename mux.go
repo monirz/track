@@ -1,6 +1,7 @@
 package track
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -59,7 +60,7 @@ func (r *Router) Connect(path string, h http.HandlerFunc) {
 	r.handle(path, http.MethodConnect, h)
 }
 
-func (r *Router) handle(path, method string, h http.HandlerFunc) {
+func (r *Router) handle(path, method string, h http.Handler) {
 
 	if len(path) < 1 {
 		panic("router path is empty")
@@ -77,9 +78,23 @@ func (r *Router) handle(path, method string, h http.HandlerFunc) {
 	}
 
 	if len(pathSplitted) > 0 {
+
+		for _, v := range r.middlewares {
+			h = v(h.ServeHTTP)
+		}
+
 		r.add(pathSplitted, method, h)
 	}
 
+}
+
+func exampleMiddleware(next http.HandlerFunc) http.HandlerFunc {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("befor")
+		next.ServeHTTP(w, r)
+		fmt.Println("after")
+	})
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -121,7 +136,8 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// 	}
 	// }
 
-	router.Value(w, req)
+	router.Value.ServeHTTP(w, req)
+
 	return
 }
 

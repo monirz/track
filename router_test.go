@@ -72,21 +72,13 @@ func TestSearch(t *testing.T) {
 func BenchmarkMux(b *testing.B) {
 	router := New()
 	handler := func(w http.ResponseWriter, r *http.Request) {}
-	router.Get("book/:id", handler)
+	router.Get("/book/:id", handler)
 
-	request, _ := http.NewRequest("GET", "book/anything", nil)
+	request, _ := http.NewRequest("GET", "/book/anything", nil)
 	w := httptest.NewRecorder()
 
 	for i := 0; i < b.N; i++ {
 		router.ServeHTTP(w, request)
-	}
-}
-
-func BenchmarkFib10(b *testing.B) {
-	// run the Fib function b.N times
-	v := []string{"v1", ":id"}
-	for i := 0; i < b.N; i++ {
-		router.search(v)
 	}
 }
 
@@ -96,6 +88,6 @@ func BenchmarkAdd(b *testing.B) {
 	handler := func(w http.ResponseWriter, r *http.Request) {}
 
 	for i := 0; i < b.N; i++ {
-		router.add(v, "GET", handler)
+		router.add(v, "GET", http.HandlerFunc(handler))
 	}
 }

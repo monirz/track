@@ -9,25 +9,41 @@ Track is a fast and lightweight HTTP router for Go built using Trie/Prefix data 
 ### Usage
 
 ```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/monirz/track"
+)
+
 func main() {
 
 	router := track.New()
 
-	router.Get("/users", users)
-	router.Get("/users/profile", users)
-	router.Post("/users/:id", users)
-	router.Patch("/users/:id", users)
-	router.Delete("/users/:id", users)
+	router.Get("/users", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello users!")
+	})
 
 	http.ListenAndServe(":8090", router)
 }
 
-//create your http handler 
-func users(w http.ResponseWriter, r *http.Request) {
-	//get the route parameter
-	id := r.Context().Value("id")
-	log.Println("user id", id)
-	fmt.Fprintf(w, "user id: %v", id)
+```
+
+### Using middleware
+
+```go
+func main() {
+
+	r := track.New()
+
+	r.Use(track.CORSMethodMiddleware(r))
+	r.Get("/users", userHandler)
+	r.Options("/users", userHandler)
+
+	http.ListenAndServe(":8090", r)
+
 }
 ```
 
@@ -35,4 +51,9 @@ func users(w http.ResponseWriter, r *http.Request) {
 
 ```
 $ go test -v . 
+```
+### Benchmark 
+
+```
+$ go test -bench=. 
 ```

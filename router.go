@@ -4,17 +4,14 @@ import (
 	"net/http"
 )
 
-// type handler func(http.ResponseWriter, *http.Request)
-
-// var Paths = make(map[string]http.HandlerFunc)
-
 type Router struct {
-	Children map[string]*Router
-	Value    http.HandlerFunc
-	isEnd    bool
-	isParam  bool
-	Pram     map[string]string
-	Method   []string
+	Children    map[string]*Router
+	Value       http.Handler
+	isEnd       bool
+	isParam     bool
+	Pram        map[string]string
+	Method      []string
+	middlewares []func(http.HandlerFunc) http.HandlerFunc
 }
 
 //New creates new instance
@@ -25,7 +22,7 @@ func New() *Router {
 	return &Router{Children: m, Pram: params}
 }
 
-func (r *Router) add(vals []string, method string, h func(http.ResponseWriter, *http.Request)) {
+func (r *Router) add(vals []string, method string, h http.Handler) {
 
 	if len(vals) < 1 {
 		r.isEnd = true
@@ -48,7 +45,6 @@ func (r *Router) add(vals []string, method string, h func(http.ResponseWriter, *
 
 func (r *Router) search(vals []string) *Router {
 
-	// params := make(map[string]string)
 	if r == nil {
 		return nil
 	}
@@ -83,10 +79,6 @@ func (r *Router) search(vals []string) *Router {
 			return nil
 		}
 	}
-
-	// if _, ok := Paths[path]; !ok {
-
-	// }
 
 	return curr
 }
