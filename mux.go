@@ -1,6 +1,7 @@
 package track
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -128,14 +129,13 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// var ctx context.Context
 
-	// if len(router.Pram) > 0 {
+	if len(router.Pram) > 0 {
 
-	// 	for k, v := range router.Pram {
-	// 		ctx = context.WithValue(req.Context(), k[1:], v)
-	// 		req = req.WithContext(ctx)
-	// 	}
-	// }
-
+		for k, v := range router.Pram {
+			ctx := context.WithValue(req.Context(), k[1:], v)
+			req = req.WithContext(ctx)
+		}
+	}
 	router.Value.ServeHTTP(w, req)
 
 	return

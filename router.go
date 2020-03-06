@@ -51,10 +51,9 @@ func (r *Router) search(vals []string) *Router {
 
 	curr := r
 
-	for _, v := range vals {
+	for k, v := range vals {
 
 		if _, ok := curr.Children[v]; !ok {
-
 			if len(curr.Children) > 0 {
 
 				for k := range curr.Children {
@@ -78,6 +77,11 @@ func (r *Router) search(vals []string) *Router {
 		if curr == nil {
 			return nil
 		}
+
+		if k == len(vals)-1 && !curr.isEnd && len(curr.Children) > 0 {
+			return nil
+		}
+
 	}
 
 	return curr

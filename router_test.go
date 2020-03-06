@@ -60,10 +60,19 @@ func TestSearch(t *testing.T) {
 		t.Errorf("expected %v got %v ", nil, result)
 	}
 
-	v = []string{"api2", "v2", "12345", "posts"}
+	v = []string{"api2", "v2", "444", "posts"}
 	result = router.search(v)
 
 	if result == nil {
+		t.Errorf("expected %v got %v ", nil, result)
+	}
+
+	//endpoint is: /api2/v2/:id/posts
+	//and looking for /api2/v2 should return nil Router
+	v = []string{"api2", "v2"}
+	result = router.search(v)
+
+	if result != nil {
 		t.Errorf("expected %v got %v ", nil, result)
 	}
 
